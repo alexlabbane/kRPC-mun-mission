@@ -37,3 +37,11 @@ vessel.auto_pilot.engage()
 vessel.auto_pilot.reference_frame = vessel.surface_velocity_reference_frame
 vessel.auto_pilot.target_direction = (0.0, -1.0, 0.0)  # Point retro-grade surface
 startLanding.begin_landing(vessel, space_center, connection)
+
+print("Stabilizing...")
+vessel.auto_pilot.reference_frame = vessel.surface_reference_frame
+vessel.auto_pilot.target_direction = (1.0, 0.0, 0.0)
+time.sleep(10)
+vessel.auto_pilot.disengage()
+vessel.control.sas = True
+print("DONE")

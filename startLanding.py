@@ -3,7 +3,7 @@ import time as t
 import msgpack
 import _thread as thread
 import matplotlib.pyplot as plt
-from math import log
+from math import log, acos
 
 def entryBurn(vessel, space_center):
     """T30 Reliant Engine: Burns 8.68 oxidizer and 7.11 fuel per second at max throttle
@@ -155,13 +155,19 @@ def velocity_intercept(vessel, initial_velocity, tolerance=0.01, thrust_multipli
     """Finds how long it will take for velocity to equal zero
     Only considers times between 0 and 92 seconds"""
     current_body = vessel.orbit.body
-
     initial_t = t.time()
     if initial_velocity > 0:
         initial_velocity *= -1
     time = 10
     thrust = thrust_multiplier * determine_surface_isp_ratio(current_body, vessel.flight(current_body.reference_frame), vessel.parts.engines) * (vessel.max_vacuum_thrust/1000)
     # TODO: Adjust for current direction of vessel (not needed for nearly vertical entry)
+    # Adjust for direction of retrograde
+    direction = vessel.flight(vessel.surface_reference_frame).direction
+    #print(direction)
+    multiplier = direction[0] #abs(direction[1] / (direction[0] ** 2 + direction[1] ** 2 + direction[2] ** 2) ** 0.5)
+    #print("Multiplier:", multiplier)
+    thrust = thrust * abs(multiplier)
+
     gravity_accel = current_body.surface_gravity
     mass = vessel.mass/1000
     mass_burn_rate = approximate_mass_burn_rate(vessel)
@@ -199,6 +205,13 @@ def height_intercept(vessel, time, initial_velocity, current_height, thrust_mult
     current_body = vessel.orbit.body
 
     thrust = thrust_multiplier * determine_surface_isp_ratio(current_body, vessel.flight(current_body.reference_frame), vessel.parts.engines) * (vessel.max_vacuum_thrust/1000)
+
+    # Adjust for direction of retrograde
+    direction = vessel.flight(vessel.surface_reference_frame).direction
+    multiplier = direction[0]
+    #print("Multiplier:", multiplier)
+    thrust = thrust * abs(multiplier)
+
     gravity_accel = current_body.surface_gravity
     mass = vessel.mass/1000
     mass_burn_rate = approximate_mass_burn_rate(vessel)
